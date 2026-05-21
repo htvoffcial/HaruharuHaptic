@@ -1,0 +1,50 @@
+name: Generate HHT
+
+on:
+  push:
+    paths:
+      - "audio/**"
+      - "tools/**"
+      - ".github/workflows/generate-hht.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy
+
+      - name: Generate exports/*.hht
+        run: |
+          python tools/hht_from_m4a.py --input-dir audio --output-dir exports
+
+      - name: Commit exports
+        run: |
+          if git diff --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add exports
+          git commit -m "Update exports/*.hht"
+          git push
