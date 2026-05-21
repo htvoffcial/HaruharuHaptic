@@ -146,7 +146,7 @@ def main():
 
     for root, _, files in os.walk(args.input_dir):
         for fn in files:
-            if not fn.lower().endswith(".m4a"):
+            if not fn.lower().endswith(".m4a", ".opus", ".mp3", ".aac", ".ogg"):
                 continue
 
             in_path = os.path.join(root, fn)
